@@ -598,7 +598,7 @@ function render(d) {
     row(7,'봉헌송',p12.offering_song),
     row(8,'봉헌기도',p12.offering_prayer),
     row(9,'교회생활',p12.church_life),
-    row(10,'찬양대 찬송',p12.choir_anthem.join('<br>')),
+    row(10,'찬양대 찬송', Array.isArray(p12.choir_anthem) ? p12.choir_anthem.join('<br>') : (p12.choir_anthem||'')),
     row(11,'성경봉독',p12.scripture,true),
     row(12,'말씀선포',p12.sermon_title+'<br>'+p12.preacher,true),
     row(13,'결단 찬송',p12.closing_hymn),

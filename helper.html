@@ -345,6 +345,12 @@
           ⬇️ jubo.json 다운로드
         </button>
       </div>
+
+      <!-- 미리보기 섹션 -->
+      <div id="preview-section" style="display:none;margin-top:16px;">
+        <div style="font-size:13px;font-weight:700;color:#1a3566;margin-bottom:8px;">📱 주보 내용 미리보기</div>
+        <div id="preview-content" style="background:#faf8f3;border-radius:10px;border:0.5px solid #ddd;padding:14px;font-size:12px;line-height:1.8;color:#444;"></div>
+      </div>
     </div>
   </div>
 
@@ -530,11 +536,14 @@ function validateJson(showAlert) {
     input.className = 'json-area valid';
     result.className = 'validate-result ok';
     result.style.display = 'block';
-    result.innerHTML = `✅ JSON이 올바릅니다! 날짜: <strong>${parsed.meta?.date || '?'}</strong> / 호수: <strong>${parsed.meta?.issue || '?'}</strong>`;
+    result.innerHTML = `✅ JSON이 올바릅니다! 날짜: <strong>${parsed.meta?.date || '?'}</strong> / 호수: <strong>${parsed.meta?.issue || '?'}</strong> / 설교: <strong>${parsed.worship?.part3?.sermon_title?.replace(/"/g,'') || '?'}</strong>`;
     downloadSection.classList.add('show');
 
     // 정제된 JSON 저장
     input.dataset.parsed = JSON.stringify(parsed, null, 2);
+
+    // 미리보기 섹션 업데이트
+    showPreview(parsed);
 
   } catch(e) {
     input.className = 'json-area invalid';
@@ -558,12 +567,124 @@ function downloadJson() {
   URL.revokeObjectURL(a.href);
 }
 
+function showPreview(d) {
+  const el = document.getElementById('preview-section');
+  const content = document.getElementById('preview-content');
+  el.style.display = 'block';
+
+  const m = d.meta || {};
+  const w = d.worship || {};
+  const p3 = w.part3 || {};
+  const p4 = w.part4 || {};
+  const pm = w.afternoon || {};
+  const wed = w.wednesday || {};
+  const bible = d.bible_reading || {};
+  const schedule = d.schedule || [];
+  const fellowship = d.fellowship || {};
+
+  const tag = (text, color='#1a6fb5', bg='#e8f4fd') =>
+    `<span style="background:${bg};color:${color};padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;margin-right:4px">${text}</span>`;
+
+  let html = '';
+
+  // 기본 정보
+  html += `<div style="background:#1a3566;color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:10px;">
+    <div style="font-size:14px;font-weight:700;">${m.volume||''} ${m.issue||''} &nbsp;·&nbsp; ${m.date||''}</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:3px;">${m.season||''}</div>
+  </div>`;
+
+  // 설교
+  html += `<div style="margin-bottom:8px;padding:10px;background:#EEF2F8;border-radius:8px;">
+    ${tag('말씀','#1a3566','#d4e4ff')}
+    <span style="font-weight:700;color:#1a3566;">${(p3.sermon_title||'').replace(/"/g,'')}</span>
+    &nbsp;<span style="color:#888;font-size:11px;">${p3.scripture||''} / ${p3.preacher||''}</span>
+  </div>`;
+
+  // 4부 설교
+  if (p4.sermon_title) {
+    html += `<div style="margin-bottom:8px;padding:8px 10px;background:#f5f0ff;border-radius:8px;">
+      ${tag('4부','#4a35b8','#f0eeff')}
+      <span style="font-weight:700;color:#4a35b8;">${(p4.sermon_title||'').replace(/"/g,'')}</span>
+      &nbsp;<span style="color:#888;font-size:11px;">${p4.scripture||''} / ${p4.preacher||''}</span>
+    </div>`;
+  }
+
+  // 오후예배
+  if (pm.conductor) {
+    html += `<div style="margin-bottom:8px;padding:8px 10px;background:#f0f7ee;border-radius:8px;">
+      ${tag('오후예배','#2e6b1e','#f0f7ee')}
+      <span style="color:#444;">${pm.conductor} 인도</span>
+    </div>`;
+  }
+
+  // 삼일예배
+  if (wed.sermon_title) {
+    html += `<div style="margin-bottom:8px;padding:8px 10px;background:#fff8e1;border-radius:8px;">
+      ${tag('삼일예배','#b45309','#fef3e2')} ${wed.date||''} &nbsp;
+      <span style="color:#444;">${wed.sermon_title}</span>
+    </div>`;
+  }
+
+  // 교회생활 요약
+  const cl = d.church_life || [];
+  if (cl.length) {
+    html += `<div style="margin-bottom:8px;"><div style="font-weight:700;color:#1a3566;font-size:11px;margin-bottom:4px;">교회생활 (${cl.reduce((a,c)=>a+c.items.length,0)}건)</div>`;
+    cl.forEach(cat => {
+      cat.items.forEach(item => {
+        html += `<div style="padding:3px 0;border-bottom:0.5px solid #eee;">${tag(item.tag||'','#555','#eee')} ${item.title}</div>`;
+      });
+    });
+    html += '</div>';
+  }
+
+  // 성도의 교제
+  const brs = fellowship.bereaved || [];
+  const cong = fellowship.congratulations || [];
+  const bible_comp = fellowship.bible_completion || [];
+  if (brs.length || cong.length || bible_comp.length) {
+    html += `<div style="margin-bottom:8px;"><div style="font-weight:700;color:#1a3566;font-size:11px;margin-bottom:4px;">성도의 교제</div>`;
+    brs.forEach(f => html += `<div style="padding:3px 0;">${tag('별세','#a32d2d','#fce8e8')} ${f.content}</div>`);
+    cong.forEach(f => html += `<div style="padding:3px 0;">${tag(f.tag||'축하','#1a6fb5','#e8f4fd')} ${f.content}</div>`);
+    bible_comp.forEach(f => html += `<div style="padding:3px 0;">${tag('성경쓰기','#2e6b1e','#f0f7ee')} ${f.content}</div>`);
+    html += '</div>';
+  }
+
+  // 금주 성경보기
+  if (Object.keys(bible).length) {
+    html += `<div style="margin-bottom:8px;"><div style="font-weight:700;color:#1a3566;font-size:11px;margin-bottom:4px;">금주의 성경보기</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">`;
+    Object.entries(bible).forEach(([day,txt]) => {
+      html += `<div style="background:#EEF2F8;padding:4px 8px;border-radius:5px;text-align:center;min-width:50px;">
+        <div style="font-size:10px;color:#888;">${day}</div>
+        <div style="font-size:11px;font-weight:700;color:#1a3566;">${txt}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  // 생활 예고
+  if (schedule.length) {
+    html += `<div><div style="font-weight:700;color:#1a3566;font-size:11px;margin-bottom:4px;">생활 예고 (${schedule.length}건)</div>`;
+    schedule.slice(0,5).forEach(s => {
+      html += `<div style="padding:3px 0;border-bottom:0.5px solid #eee;display:flex;gap:8px;">
+        <span style="color:#b8963e;font-size:11px;font-weight:700;min-width:80px;">${s.date}</span>
+        <span style="font-size:11px;color:#444;">${s.desc}</span>
+      </div>`;
+    });
+    if (schedule.length > 5) html += `<div style="font-size:11px;color:#888;padding-top:4px;">외 ${schedule.length-5}건...</div>`;
+    html += '</div>';
+  }
+
+  content.innerHTML = html;
+}
+
 function clearJson() {
   const input = document.getElementById('json-input');
   input.value = '';
   input.className = 'json-area';
   document.getElementById('validate-result').style.display = 'none';
   document.getElementById('download-section').classList.remove('show');
+  document.getElementById('preview-section').style.display = 'none';
 }
 </script>
 </body>
