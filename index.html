@@ -551,9 +551,14 @@ function showInstallGuide() {
 async function loadJubo() {
   try {
     const res = await fetch('jubo.json?v=' + Date.now());
-    if (!res.ok) throw new Error('JSON 로드 실패');
+    if (!res.ok) throw new Error('JSON 로드 실패 (상태코드: ' + res.status + ')');
     const d = await res.json();
-    render(d);
+    try {
+      render(d);
+    } catch(renderErr) {
+      console.error('render 오류:', renderErr);
+      // render 오류가 나도 일단 앱은 표시
+    }
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'block';
   } catch(e) {
@@ -563,13 +568,13 @@ async function loadJubo() {
 }
 
 function render(d) {
-  const m = d.meta;
-  const w = d.worship;
+  const m = d.meta || {};
+  const w = d.worship || {};
 
   // ── 헤더 ──
-  document.getElementById('year-badge').textContent = m.year + '주년';
-  document.getElementById('jubo-no').textContent = `주일예배순서 ${m.volume} ${m.issue}`;
-  document.getElementById('jubo-date').textContent = `${m.date} (주일) · ${m.season}`;
+  document.getElementById('year-badge').textContent = (m.year || '') + '주년';
+  document.getElementById('jubo-no').textContent = `주일예배순서 ${m.volume||''} ${m.issue||''}`;
+  document.getElementById('jubo-date').textContent = `${m.date||''} (주일) · ${m.season||''}`;
 
   // ── 예배부 그리드 ──
   document.getElementById('worship-grid').innerHTML = `
@@ -580,14 +585,15 @@ function render(d) {
   `;
 
   // ── 설교 카드 ──
+  const p3 = w.part3 || {};
   document.getElementById('sermon-badge').textContent = '이번 주 말씀 (1·2·3부)';
-  document.getElementById('sermon-title').textContent = w.part3.sermon_title.replace(/"/g,'');
-  document.getElementById('sermon-ref').textContent = w.part3.scripture;
-  document.getElementById('sermon-pastor').textContent = '담임 ' + w.part3.preacher;
+  document.getElementById('sermon-title').textContent = (p3.sermon_title||'').replace(/"/g,'');
+  document.getElementById('sermon-ref').textContent = p3.scripture||'';
+  document.getElementById('sermon-pastor').textContent = '담임 ' + (p3.preacher||'');
 
   // ── 1·2부 순서 ──
-  const p12 = w.part1_2;
-  document.getElementById('p12-label').textContent = p12.label + ' · 인도: ' + p12.conductor;
+  const p12 = w.part1_2 || {};
+  document.getElementById('p12-label').textContent = (p12.label||'') + ' · 인도: ' + (p12.conductor||'');
   document.getElementById('p12-rows').innerHTML = [
     row(1,'입례송',p12.intro_song),
     row(2,'신앙고백',p12.creed),
@@ -607,8 +613,7 @@ function render(d) {
   ].join('');
 
   // ── 3부 순서 ──
-  const p3 = w.part3;
-  document.getElementById('p3-label').textContent = p3.label + ' · 인도: ' + p3.conductor;
+  document.getElementById('p3-label').textContent = (p3.label||'') + ' · 인도: ' + (p3.conductor||'');
   document.getElementById('p3-rows').innerHTML = [
     row(1,'입례송',p3.intro_song),
     row(2,'신앙고백',p3.creed),
@@ -627,8 +632,8 @@ function render(d) {
   ].join('');
 
   // ── 4부 순서 ──
-  const p4 = w.part4;
-  document.getElementById('p4-label').textContent = p4.label + ' · 인도: ' + p4.conductor;
+  const p4 = w.part4 || {};
+  document.getElementById('p4-label').textContent = (p4.label||'') + ' · 인도: ' + (p4.conductor||'');
   document.getElementById('p4-rows').innerHTML = [
     row(1,'중보적기도',p4.intercessory_prayer),
     row(2,'찬양',p4.praise),
@@ -640,33 +645,33 @@ function render(d) {
   ].join('');
 
   // ── 오후 예배 ──
-  const pm = w.afternoon;
-  document.getElementById('pm-label').textContent = pm.label + ' ' + (pm.subtitle||'') + ' · ' + pm.time + ' · 인도: ' + pm.conductor;
-  document.getElementById('pm-rows').innerHTML = pm.order.map((o,i) =>
+  const pm = w.afternoon || {};
+  document.getElementById('pm-label').textContent = (pm.label||'') + ' ' + (pm.subtitle||'') + ' · ' + (pm.time||'') + ' · 인도: ' + (pm.conductor||'');
+  document.getElementById('pm-rows').innerHTML = (pm.order||[]).map((o,i) =>
     row(i+1, o.name, o.detail)
   ).join('');
 
   // ── 삼일예배 ──
-  const ww = w.wednesday;
+  const ww = w.wednesday || {};
   document.getElementById('wed-rows').innerHTML = [
-    simpleRow('일시', ww.date + ' ' + ww.times),
-    simpleRow('인도', ww.conductor),
-    simpleRow('찬송', ww.hymns),
-    simpleRow('기도', ww.prayer),
-    simpleRow('찬양대', ww.choir),
-    simpleRow('성경봉독', ww.scripture),
-    simpleRow('말씀', ww.sermon_title),
+    simpleRow('일시', (ww.date||'') + ' ' + (ww.times||'')),
+    simpleRow('인도', ww.conductor||''),
+    simpleRow('찬송', ww.hymns||''),
+    simpleRow('기도', ww.prayer||''),
+    simpleRow('찬양대', ww.choir||''),
+    simpleRow('성경봉독', ww.scripture||''),
+    simpleRow('말씀', ww.sermon_title||''),
   ].join('');
 
   // ── 금요성령기도회 ──
-  const fr = w.friday;
+  const fr = w.friday || {};
   document.getElementById('fri-rows').innerHTML = [
-    simpleRow('일시', fr.date + ' ' + fr.time),
-    simpleRow('인도', fr.conductor),
-    simpleRow('찬양', fr.praise),
-    simpleRow('성경봉독', fr.scripture),
-    simpleRow('말씀', fr.sermon_title),
-    simpleRow('기도', fr.prayer),
+    simpleRow('일시', (fr.date||'') + ' ' + (fr.time||'')),
+    simpleRow('인도', fr.conductor||''),
+    simpleRow('찬양', fr.praise||''),
+    simpleRow('성경봉독', fr.scripture||''),
+    simpleRow('말씀', fr.sermon_title||''),
+    simpleRow('기도', fr.prayer||''),
   ].join('');
 
   // ── S2: 교회생활 ──
