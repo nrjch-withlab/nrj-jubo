@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노량진교회 주보 업데이트 도우미</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  :root {
+    --navy: #1a3566;
+    --gold: #b8963e;
+    --green: #2e7d32;
+    --red: #c62828;
+    --gray: #f5f5f5;
+    --border: #e0e0e0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans KR',sans-serif; background:#f8f9fa; color:#1c1c1e; font-size:14px; }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy), #243f7a);
+    color: white;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-icon { font-size: 32px; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 13px; opacity: 0.7; margin-top: 3px; }
+
+  .container { max-width: 860px; margin: 32px auto; padding: 0 20px 60px; }
+
+  /* 단계 카드 */
+  .step-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .step-head {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-num.done { background: var(--green); }
+  .step-num.current { background: var(--gold); color: var(--navy); }
+  .step-title { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .step-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .step-body { padding: 24px; }
+
+  /* 버튼 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all .15s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-primary:hover { background: #243f7a; }
+  .btn-gold { background: var(--gold); color: white; }
+  .btn-gold:hover { background: #9a7a2e; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #1b5e20; }
+  .btn-outline { background: white; color: var(--navy); border: 1.5px solid var(--navy); }
+  .btn-outline:hover { background: #f0f4ff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 프롬프트 박스 */
+  .prompt-box {
+    background: #f0f4ff;
+    border: 1.5px solid #b3c5f0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2c3e7a;
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    padding: 5px 12px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .copy-btn:hover { background: #243f7a; }
+
+  /* JSON 입력 영역 */
+  .json-area {
+    width: 100%;
+    min-height: 200px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #1c1c1e;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .json-area:focus { border-color: var(--navy); }
+  .json-area.valid { border-color: var(--green); }
+  .json-area.invalid { border-color: var(--red); }
+
+  /* 검증 결과 */
+  .validate-result {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 10px;
+    display: none;
+  }
+  .validate-result.ok { background: #e8f5e9; color: var(--green); }
+  .validate-result.ng { background: #ffebee; color: var(--red); }
+
+  /* 다운로드 버튼 */
+  .download-section {
+    text-align: center;
+    padding: 20px;
+    background: #f0faf0;
+    border-radius: 12px;
+    border: 2px dashed #81c784;
+    margin-top: 16px;
+    display: none;
+  }
+  .download-section.show { display: block; }
+  .download-section h3 { color: var(--green); font-size: 16px; margin-bottom: 8px; }
+  .download-section p { color: #555; font-size: 13px; margin-bottom: 16px; }
+
+  /* Netlify 드롭 안내 */
+  .netlify-guide {
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border: 1.5px solid #f9a825;
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .netlify-guide h4 { color: #e65100; font-size: 15px; margin-bottom: 12px; }
+  .netlify-guide ol { padding-left: 20px; }
+  .netlify-guide li { margin-bottom: 10px; font-size: 13.5px; line-height: 1.6; color: #333; }
+  .netlify-guide li strong { color: var(--navy); }
+  .netlify-guide .highlight {
+    display: inline-block;
+    background: var(--navy);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* 링크 박스 */
+  .link-box {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  .link-url { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .link-sub { font-size: 12px; color: #888; margin-top: 2px; }
+
+  /* 체크리스트 */
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    color: #333;
+    line-height: 1.5;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '□';
+    font-size: 16px;
+    color: var(--navy);
+    flex-shrink: 0;
+    margin-top: -1px;
+  }
+
+  /* 주보 미리보기 링크 */
+  .preview-bar {
+    background: linear-gradient(90deg, var(--navy), #243f7a);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    color: white;
+  }
+  .preview-bar-text { font-size: 14px; font-weight: 700; }
+  .preview-bar-sub { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+  .badge { display:inline-block; background:var(--gold); color:white; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+
+  .info-row { display:flex; gap:8px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .info-row:last-child { border-bottom:none; }
+  .info-label { min-width:80px; color:#888; font-size:12px; flex-shrink:0; padding-top:1px; }
+  .info-value { color:#1c1c1e; line-height:1.5; }
+
+  .tip-box {
+    background: #fff8e1;
+    border-left: 4px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #555;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">✝</div>
+  <div>
+    <h1>노량진교회 주보 업데이트 도우미</h1>
+    <p>매주 토요일 — 담당자: 김찬호 사무장</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 주보 보기 링크 -->
+  <div class="preview-bar">
+    <div>
+      <div class="preview-bar-text">📱 현재 주보 보기</div>
+      <div class="preview-bar-sub" id="current-jubo-url">배포 후 실제 주소가 여기에 표시됩니다</div>
+    </div>
+    <button class="btn btn-gold" onclick="window.open('/', '_blank')">주보 열기</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num current">1</div>
+      <div>
+        <div class="step-title">Claude에 PDF 올리고 프롬프트 붙여넣기</div>
+        <div class="step-sub">claude.ai 새 대화 → PDF 첨부 → 아래 프롬프트 복사해서 입력</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <p style="margin-bottom:12px;color:#555;line-height:1.7;">
+        <strong>① claude.ai</strong>에서 새 대화를 시작하세요.<br>
+        <strong>② 이번 주 주보 PDF</strong>를 파일 첨부 버튼으로 올리세요.<br>
+        <strong>③ 아래 프롬프트를 복사</strong>해서 메시지 입력창에 붙여넣고 전송하세요.
+      </p>
+
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt()">📋 복사</button>
+        <div id="prompt-text" style="padding-right:60px;font-weight:600;">
+          첨부한 PDF는 노량진교회 주일예배순서 주보입니다.<br>
+          PDF의 모든 내용을 빠짐없이 읽어서 jubo.json 형식으로 변환해 주세요.<br>
+          내용을 절대 요약하거나 생략하지 마세요.<br>
+          결과는 ```json 블록으로만 출력해 주세요.<br><br>
+          <span style="color:#555;font-weight:400">※ 프롬프트 전문은 동봉된 <strong>Claude_프롬프트.txt</strong> 파일을 참고하세요.</span>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        💡 <strong>더 정확한 결과를 원하면:</strong> 첨부한 <code>Claude_프롬프트.txt</code> 파일의 전체 내용을 복사해서 사용하세요. 헌금 명단, 셔틀버스, 심방 담당까지 모두 정확하게 추출됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num current">2</div>
+      <div>
+        <div class="step-title">Claude가 생성한 JSON 붙여넣기</div>
+        <div class="step-sub">Claude 답변에서 전체 JSON 텍스트를 복사 → 아래에 붙여넣기</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <p style="margin-bottom:12px;color:#555;">Claude 답변에서 <code>{ }</code> 로 시작하는 JSON 전체를 복사해서 아래에 붙여넣으세요.</p>
+
+      <textarea
+        class="json-area"
+        id="json-input"
+        placeholder='Claude가 생성한 JSON을 여기에 붙여넣으세요...
+
+{
+  "meta": {
+    "volume": "120권",
+    "issue": "제 17호",
+    ...
+  }
+}'
+        oninput="validateJson()"
+      ></textarea>
+
+      <div class="validate-result" id="validate-result"></div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="validateJson(true)">✅ JSON 검증하기</button>
+        <button class="btn btn-outline" onclick="clearJson()">🗑 지우기</button>
+      </div>
+
+      <div class="download-section" id="download-section">
+        <h3>✅ JSON이 올바릅니다!</h3>
+        <p>아래 버튼을 눌러 <strong>jubo.json</strong> 파일을 다운로드하세요.</p>
+        <button class="btn btn-green" style="font-size:16px;padding:14px 32px;" onclick="downloadJson()">
+          ⬇️ jubo.json 다운로드
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Netlify에 파일 올리기 (드래그&드롭)</div>
+        <div class="step-sub">다운로드한 jubo.json 파일을 Netlify에 끌어다 놓기만 하면 완료</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="netlify-guide">
+        <h4>📂 Netlify 업로드 방법</h4>
+        <ol>
+          <li>
+            <strong>app.netlify.com</strong> 접속 → 로그인<br>
+            <span style="color:#888;font-size:12px;">북마크에 저장해두세요</span>
+          </li>
+          <li>
+            <strong>노량진교회 주보 사이트</strong> 클릭
+          </li>
+          <li>
+            상단 메뉴 <span class="highlight">Deploys</span> 클릭
+          </li>
+          <li>
+            페이지 아래쪽 <span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Drop to upload</span> 영역에<br>
+            다운로드한 <strong>jubo.json</strong> 파일을 <strong>끌어다 놓기</strong>
+          </li>
+          <li>
+            자동으로 배포 시작 → 1~2분 후 완료 ✅
+          </li>
+        </ol>
+      </div>
+
+      <div class="tip-box" style="margin-top:14px;">
+        💡 <strong>파일이 하나뿐이어도 됩니다.</strong> jubo.json만 교체해도 전체 주보가 바뀝니다. index.html 등 다른 파일은 건드리지 않아도 됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">카카오톡 채널에 주보 링크 공유</div>
+        <div class="step-sub">배포 완료 후 교인들에게 주보 링크 발송</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="checklist">
+        <li>Netlify 배포 완료 확인 (초록 불 ✅)</li>
+        <li>주보 링크 열어서 내용 최종 확인</li>
+        <li>카카오톡 채널에 이번 주 주보 링크 발송</li>
+        <li>홈 화면 추가 안내 메시지 함께 발송 (첫 주만)</li>
+      </ul>
+
+      <div class="link-box" style="margin-top:16px;">
+        <div>
+          <div class="link-url" id="share-url">주보 주소를 여기에 설정하세요</div>
+          <div class="link-sub">카카오톡 채널에 이 링크를 공유하세요</div>
+        </div>
+        <button class="btn btn-outline" onclick="copyShareUrl()">복사</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 매주 요약 체크리스트 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num" style="background:var(--gold)">✓</div>
+      <div>
+        <div class="step-title">매주 작업 요약 체크리스트</div>
+        <div class="step-sub">토요일 오후 — 약 10분 소요</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="checklist">
+        <li>이번 주 주보 PDF 파일 받기</li>
+        <li>claude.ai 열기 → 새 대화 시작</li>
+        <li>PDF 첨부 → 프롬프트 붙여넣기 → 전송</li>
+        <li>Claude 답변에서 JSON 전체 복사</li>
+        <li>이 페이지(도우미)에서 JSON 붙여넣기 → 검증</li>
+        <li>jubo.json 다운로드</li>
+        <li>Netlify Deploys 페이지에 파일 드래그&드롭</li>
+        <li>배포 완료 확인 → 주보 링크 확인</li>
+        <li>카카오톡 채널에 공유</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 설정 섹션 -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num" style="background:#888">⚙</div>
+      <div>
+        <div class="step-title">주소 설정 (처음 한 번만)</div>
+        <div class="step-sub">Netlify에서 발급받은 주보 주소를 여기에 저장하세요</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div style="display:flex;gap:8px;">
+        <input
+          type="text"
+          id="url-input"
+          placeholder="예: https://nrjch-jubo.netlify.app"
+          style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;"
+        >
+        <button class="btn btn-primary" onclick="saveUrl()">저장</button>
+      </div>
+      <p style="margin-top:8px;font-size:12px;color:#888;">저장한 주소는 이 브라우저에 기억됩니다.</p>
+    </div>
+  </div>
+
+</div><!-- container -->
+
+<script>
+// 저장된 URL 불러오기
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('nrj-jubo-url');
+  if (saved) {
+    document.getElementById('share-url').textContent = saved;
+    document.getElementById('current-jubo-url').textContent = saved;
+    document.getElementById('url-input').value = saved;
+  }
+});
+
+function saveUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) return alert('주소를 입력해주세요.');
+  localStorage.setItem('nrj-jubo-url', url);
+  document.getElementById('share-url').textContent = url;
+  document.getElementById('current-jubo-url').textContent = url;
+  alert('✅ 저장되었습니다!');
+}
+
+function copyShareUrl() {
+  const url = document.getElementById('share-url').textContent;
+  if (url.includes('설정')) return alert('먼저 아래에서 주보 주소를 설정해주세요.');
+  navigator.clipboard.writeText(url).then(() => alert('✅ 링크가 복사되었습니다!'));
+}
+
+function copyPrompt() {
+  const text = `첨부한 PDF는 노량진교회 주일예배순서 주보입니다.
+PDF의 모든 내용을 빠짐없이 읽어서 jubo.json 형식으로 변환해 주세요.
+내용을 절대 요약하거나 생략하지 마세요.
+결과는 \`\`\`json 블록으로만 출력해 주세요.`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => btn.textContent = '📋 복사', 2000);
+  });
+}
+
+function validateJson(showAlert) {
+  const input = document.getElementById('json-input');
+  const result = document.getElementById('validate-result');
+  const downloadSection = document.getElementById('download-section');
+  const text = input.value.trim();
+
+  if (!text) {
+    result.style.display = 'none';
+    downloadSection.classList.remove('show');
+    return;
+  }
+
+  // ```json 블록 제거
+  let jsonText = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+
+  try {
+    const parsed = JSON.parse(jsonText);
+
+    // 필수 키 확인
+    const required = ['meta', 'worship', 'duty', 'church_life', 'bible_reading', 'schedule'];
+    const missing = required.filter(k => !parsed[k]);
+
+    if (missing.length > 0) {
+      throw new Error(`필수 항목 누락: ${missing.join(', ')}`);
+    }
+
+    input.className = 'json-area valid';
+    result.className = 'validate-result ok';
+    result.style.display = 'block';
+    result.innerHTML = `✅ JSON이 올바릅니다! 날짜: <strong>${parsed.meta?.date || '?'}</strong> / 호수: <strong>${parsed.meta?.issue || '?'}</strong>`;
+    downloadSection.classList.add('show');
+
+    // 정제된 JSON 저장
+    input.dataset.parsed = JSON.stringify(parsed, null, 2);
+
+  } catch(e) {
+    input.className = 'json-area invalid';
+    result.className = 'validate-result ng';
+    result.style.display = 'block';
+    result.textContent = '❌ JSON 오류: ' + e.message + ' — Claude에게 "JSON 오류가 있습니다. 다시 생성해 주세요."라고 요청하세요.';
+    downloadSection.classList.remove('show');
+  }
+}
+
+function downloadJson() {
+  const input = document.getElementById('json-input');
+  const parsed = input.dataset.parsed;
+  if (!parsed) return;
+
+  const blob = new Blob([parsed], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'jubo.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function clearJson() {
+  const input = document.getElementById('json-input');
+  input.value = '';
+  input.className = 'json-area';
+  document.getElementById('validate-result').style.display = 'none';
+  document.getElementById('download-section').classList.remove('show');
+}
+</script>
+</body>
+</html>

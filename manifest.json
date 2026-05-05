@@ -1,0 +1,23 @@
+{
+  "name": "노량진교회 주일예배순서",
+  "short_name": "노량진교회 주보",
+  "description": "노량진교회 주일예배순서 및 교회생활 안내",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8f3",
+  "theme_color": "#1a3566",
+  "orientation": "portrait",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

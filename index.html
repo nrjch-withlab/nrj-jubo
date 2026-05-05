@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a3566">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="노량진교회 주보">
+<link rel="manifest" href="manifest.json">
+<title>노량진교회 주보</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a3566;
+  --navy2: #243f7a;
+  --gold: #b8963e;
+  --gold2: #d4af5a;
+  --cream: #faf8f3;
+  --ww: #fffdf9;
+  --td: #1c1c1e;
+  --tm: #444;
+  --tg: #888;
+  --bdr: rgba(26,53,102,0.11);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--cream);
+  color: var(--td);
+  max-width: 480px;
+  margin: 0 auto;
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(155deg, var(--navy) 0%, var(--navy2) 100%);
+  padding: 24px 18px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '✝';
+  position: absolute;
+  right: -8px; top: -10px;
+  font-size: 120px;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+.hd-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.church-name { font-family:'Noto Serif KR',serif; font-size:22px; font-weight:700; color:#fff; letter-spacing:-0.3px; }
+.church-sub { font-size:11px; color:rgba(255,255,255,0.5); margin-top:2px; font-weight:300; }
+.year-badge {
+  background: rgba(255,255,255,0.14);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.8);
+  font-weight:600;
+  letter-spacing:0.5px;
+  white-space:nowrap;
+}
+.hd-divider { height:1px; background:linear-gradient(90deg,var(--gold),transparent); margin:10px 0 8px; }
+.jubo-no { font-size:11px; color:var(--gold2); font-weight:600; letter-spacing:1px; margin-bottom:3px; }
+.jubo-date { font-size:12px; color:rgba(255,255,255,0.65); font-weight:300; }
+
+/* ── TAB NAV ── */
+.tabs {
+  background: var(--ww);
+  display: flex;
+  border-bottom: 0.5px solid var(--bdr);
+  position: sticky; top:0; z-index:50;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 12px 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--tg);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.tab-btn.on { color:var(--navy); border-bottom-color:var(--gold); font-weight:700; }
+
+/* ── SECTIONS ── */
+.sec { display:none; padding:14px; padding-bottom:80px; }
+.sec.on { display:block; animation: fi .2s ease; }
+@keyframes fi { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── COMMON CARDS ── */
+.card { background:var(--ww); border-radius:12px; border:0.5px solid var(--bdr); overflow:hidden; margin-bottom:10px; }
+.card-head { background:var(--navy); padding:9px 14px; }
+.card-head.gold { background:linear-gradient(90deg,var(--gold),var(--gold2)); }
+.card-title { font-family:'Noto Serif KR',serif; font-size:12.5px; font-weight:600; color:#fff; letter-spacing:0.3px; }
+.card-title.dark { color:var(--navy); }
+
+/* ── ROWS ── */
+.row { display:flex; align-items:center; padding:9px 14px; border-bottom:0.5px solid var(--bdr); gap:10px; }
+.row:last-child { border-bottom:none; }
+.row.hi { background:rgba(26,53,102,0.04); }
+.rn { width:20px; height:20px; border-radius:50%; background:var(--navy); color:#fff; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.rn.g { background:var(--gold); color:var(--navy); }
+.rl { flex:1; font-size:12.5px; color:var(--td); font-weight:500; }
+.rd { font-size:11px; color:var(--tg); text-align:right; max-width:160px; line-height:1.5; white-space:pre-line; }
+
+/* ── SERMON CARD ── */
+.sermon-bg {
+  background: linear-gradient(135deg, var(--navy) 0%, #0c1f4a 100%);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.sermon-bg::after { content:'✝'; position:absolute; right:10px; bottom:-12px; font-size:72px; color:rgba(255,255,255,0.04); }
+.s-badge { display:inline-block; background:var(--gold); color:var(--navy); font-size:9px; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; letter-spacing:0.5px; }
+.s-title { font-family:'Noto Serif KR',serif; font-size:17px; font-weight:700; color:#fff; line-height:1.4; margin-bottom:6px; }
+.s-ref { font-size:12px; color:var(--gold2); margin-bottom:10px; white-space:pre-line; }
+.s-pastor { font-size:11px; color:rgba(255,255,255,0.55); }
+
+/* ── WORSHIP GRID ── */
+.w-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
+.w-card { background:var(--ww); border-radius:10px; border:0.5px solid var(--bdr); padding:10px 12px; }
+.w-card.main { border:1.5px solid var(--gold); }
+.w-card-t { font-size:10px; color:var(--tg); margin-bottom:3px; }
+.w-card-v { font-size:13px; font-weight:700; color:var(--navy); }
+.w-card-v.gold { color:var(--gold); }
+.w-card-s { font-size:11px; color:var(--tm); margin-top:2px; }
+
+/* ── NOTICE ITEMS ── */
+.ni { padding:11px 14px; border-bottom:0.5px solid var(--bdr); }
+.ni:last-child { border-bottom:none; }
+.ntag { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:4px; margin-bottom:4px; letter-spacing:0.2px; }
+.t-new { background:#e8f4fd; color:#1a6fb5; }
+.t-imp { background:#fef3e2; color:#b45309; }
+.t-reg { background:#f0f7ee; color:#2e6b1e; }
+.t-sp  { background:#f0eeff; color:#4a35b8; }
+.t-mis { background:#fce8e8; color:#a32d2d; }
+.t-etc { background:#f1efe8; color:#5f5e5a; }
+.n-title { font-size:13px; font-weight:700; color:var(--td); margin-bottom:3px; line-height:1.4; }
+.n-desc { font-size:11.5px; color:var(--tm); line-height:1.65; white-space:pre-line; }
+.n-date { font-size:10.5px; color:var(--tg); margin-top:4px; }
+
+/* ── OFFERING ── */
+.o-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 14px; border-bottom:0.5px solid var(--bdr); }
+.o-row:last-child { border-bottom:none; }
+.o-label { font-size:12.5px; color:var(--tm); min-width:70px; }
+.o-value { font-size:12px; color:var(--td); text-align:right; flex:1; line-height:1.6; word-break:keep-all; }
+.o-total { background:rgba(26,53,102,0.04); }
+.o-total .o-label { font-weight:700; color:var(--navy); }
+.o-total .o-value { font-size:13px; font-weight:700; }
+
+/* ── BIBLE GRID ── */
+.bible-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; padding:12px 14px; }
+.b-day { background:rgba(26,53,102,0.06); border-radius:8px; padding:8px; text-align:center; }
+.b-d { font-size:10px; color:var(--tg); margin-bottom:3px; }
+.b-v { font-size:11px; font-weight:700; color:var(--navy); line-height:1.4; }
+
+/* ── SCHEDULE ── */
+.sch-item { padding:9px 14px; border-bottom:0.5px solid var(--bdr); display:flex; gap:10px; align-items:flex-start; }
+.sch-item:last-child { border-bottom:none; }
+.sch-date { font-size:11px; font-weight:700; color:var(--gold); min-width:80px; flex-shrink:0; padding-top:1px; }
+.sch-desc { font-size:12.5px; color:var(--td); line-height:1.5; }
+
+/* ── DUTY TABLE ── */
+.duty-table { width:100%; border-collapse:collapse; font-size:11.5px; }
+.duty-table th { background:rgba(26,53,102,0.08); color:var(--navy); font-weight:700; padding:6px 10px; text-align:center; border-bottom:0.5px solid var(--bdr); }
+.duty-table td { padding:7px 10px; border-bottom:0.5px solid var(--bdr); color:var(--tm); text-align:center; }
+.duty-table tr:last-child td { border-bottom:none; }
+.duty-table .part-label { font-weight:700; color:var(--navy); }
+
+/* ── SHUTTLE ── */
+.shuttle-item { padding:9px 14px; border-bottom:0.5px solid var(--bdr); }
+.shuttle-item:last-child { border-bottom:none; }
+.s-part { font-size:10.5px; font-weight:700; color:#fff; background:var(--navy); display:inline-block; padding:2px 8px; border-radius:4px; margin-bottom:4px; }
+.s-route { font-size:11.5px; color:var(--tm); line-height:1.7; }
+
+/* ── INSTALL BANNER ── */
+.install-bar {
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border-radius: 11px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.ib-t { font-size:13px; font-weight:700; color:var(--navy); }
+.ib-s { font-size:11px; color:rgba(26,53,102,0.65); margin-top:1px; }
+.ib-btn { background:var(--navy); color:#fff; border:none; border-radius:7px; padding:7px 12px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif; white-space:nowrap; }
+
+/* ── BOTTOM BAR ── */
+.bottom {
+  position: fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px;
+  background: var(--ww);
+  border-top: 0.5px solid var(--bdr);
+  display:flex;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  z-index:100;
+  box-shadow: 0 -3px 14px rgba(0,0,0,0.07);
+}
+.bb {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  font-size:10px; color:var(--tg);
+  cursor:pointer; background:none; border:none;
+  font-family:'Noto Sans KR',sans-serif; padding:3px 0;
+}
+.bb.on { color:var(--navy); }
+.bi { font-size:19px; line-height:1; }
+
+/* ── FELLOWSHIP TAGS ── */
+.f-tag { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:4px; margin-right:5px; }
+.f-brs { background:#fce8e8; color:#a32d2d; }
+.f-cong { background:#e8f4fd; color:#1a6fb5; }
+.f-bible { background:#f0f7ee; color:#2e6b1e; }
+
+/* ── LOADING ── */
+#loading { 
+  position:fixed; inset:0; background:var(--cream);
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  gap:12px; z-index:999;
+}
+.loading-cross { font-size:40px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.loading-text { font-size:13px; color:var(--tg); }
+
+/* ── CATEGORY DIVIDER ── */
+.cat-div { font-size:11px; font-weight:700; color:var(--navy); padding:10px 14px 4px; letter-spacing:0.5px; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="loading-cross">✝</div>
+  <div class="loading-text">주보를 불러오는 중...</div>
+</div>
+
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="hd-top">
+      <div>
+        <div class="church-name">노량진교회</div>
+        <div class="church-sub">대한예수교장로회(통합) · since 1906</div>
+      </div>
+      <div class="year-badge" id="year-badge"></div>
+    </div>
+    <div class="hd-divider"></div>
+    <div class="jubo-no" id="jubo-no"></div>
+    <div class="jubo-date" id="jubo-date"></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn on" onclick="sw(this,'s1')">예배순서</button>
+    <button class="tab-btn" onclick="sw(this,'s2')">교회생활</button>
+    <button class="tab-btn" onclick="sw(this,'s3')">책임담당</button>
+    <button class="tab-btn" onclick="sw(this,'s4')">성도교제</button>
+    <button class="tab-btn" onclick="sw(this,'s5')">알림·예고</button>
+  </div>
+
+  <!-- S1: 예배순서 -->
+  <div id="s1" class="sec on">
+    <!-- 예배부 그리드 -->
+    <div class="w-grid" id="worship-grid"></div>
+
+    <!-- 설교 카드 -->
+    <div class="sermon-bg">
+      <div class="s-badge" id="sermon-badge"></div>
+      <div class="s-title" id="sermon-title"></div>
+      <div class="s-ref" id="sermon-ref"></div>
+      <div class="s-pastor" id="sermon-pastor"></div>
+    </div>
+
+    <!-- 1·2부 순서 -->
+    <div class="card">
+      <div class="card-head"><div class="card-title" id="p12-label"></div></div>
+      <div id="p12-rows"></div>
+    </div>
+
+    <!-- 3부 순서 -->
+    <div class="card">
+      <div class="card-head"><div class="card-title" id="p3-label"></div></div>
+      <div id="p3-rows"></div>
+    </div>
+
+    <!-- 4부(청년부) 순서 -->
+    <div class="card">
+      <div class="card-head"><div class="card-title" id="p4-label"></div></div>
+      <div id="p4-rows"></div>
+    </div>
+
+    <!-- 오후 예배 -->
+    <div class="card">
+      <div class="card-head" style="background:rgba(26,53,102,0.65)">
+        <div class="card-title" id="pm-label"></div>
+      </div>
+      <div id="pm-rows"></div>
+    </div>
+
+    <!-- 삼일예배 -->
+    <div class="card">
+      <div class="card-head" style="background:rgba(26,53,102,0.5)">
+        <div class="card-title">삼 일 예 배</div>
+      </div>
+      <div id="wed-rows"></div>
+    </div>
+
+    <!-- 금요성령기도회 -->
+    <div class="card">
+      <div class="card-head" style="background:rgba(26,53,102,0.4)">
+        <div class="card-title">금요성령기도회</div>
+      </div>
+      <div id="fri-rows"></div>
+    </div>
+  </div>
+
+  <!-- S2: 교회생활 -->
+  <div id="s2" class="sec">
+    <div id="church-life-content"></div>
+  </div>
+
+  <!-- S3: 책임담당 -->
+  <div id="s3" class="sec">
+    <div class="card">
+      <div class="card-head"><div class="card-title">주일 책임 담당</div></div>
+      <div id="duty-content"></div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-head"><div class="card-title" id="worship-guide-title"></div></div>
+      <div id="worship-guide-content"></div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-head"><div class="card-title">심방 담당 권사</div></div>
+      <div id="intercession-content"></div>
+    </div>
+    <!-- 주일 셔틀버스 -->
+    <div class="card" style="margin-top:10px">
+      <div class="card-head"><div class="card-title">주일 셔틀버스 안내</div></div>
+      <div id="shuttle-content"></div>
+    </div>
+  </div>
+
+  <!-- S4: 성도의 교제 -->
+  <div id="s4" class="sec">
+    <div class="card">
+      <div class="card-head"><div class="card-title">성도의 교제</div></div>
+      <div id="fellowship-content"></div>
+    </div>
+    <!-- 헌금 명단 -->
+    <div class="card" style="margin-top:10px">
+      <div class="card-head gold"><div class="card-title dark">특별헌금 명단</div></div>
+      <div id="offering-content"></div>
+    </div>
+  </div>
+
+  <!-- S5: 알림·예고 -->
+  <div id="s5" class="sec">
+    <div class="install-bar" onclick="showInstallGuide()">
+      <div>
+        <div class="ib-t">홈 화면에 추가하기</div>
+        <div class="ib-s">앱처럼 바로 열 수 있어요</div>
+      </div>
+      <button class="ib-btn">추가 방법</button>
+    </div>
+
+    <!-- 금주 성경보기 -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">금주의 성경보기</div></div>
+      <div class="bible-grid" id="bible-grid"></div>
+    </div>
+
+    <!-- 생활 예고 -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">생활 예고</div></div>
+      <div id="schedule-content"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom">
+    <button class="bb on" onclick="sw2(this,'s1')" id="b1"><span class="bi">🙏</span>예배</button>
+    <button class="bb" onclick="sw2(this,'s2')" id="b2"><span class="bi">📋</span>교회생활</button>
+    <button class="bb" onclick="sw2(this,'s3')" id="b3"><span class="bi">👥</span>책임담당</button>
+    <button class="bb" onclick="sw2(this,'s4')" id="b4"><span class="bi">🤝</span>성도교제</button>
+    <button class="bb" onclick="sw2(this,'s5')" id="b5"><span class="bi">📅</span>알림</button>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ── 탭 전환 ──
+function sw(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(id).classList.add('on');
+  ['s1','s2','s3','s4','s5'].forEach((s,i) => {
+    document.getElementById('b'+(i+1)).classList.toggle('on', s===id);
+  });
+}
+function sw2(btn, id) {
+  document.querySelectorAll('.bb').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('on', ['s1','s2','s3','s4','s5'][i]===id);
+  });
+}
+
+// ── 헬퍼 ──
+function row(num, label, detail, highlight) {
+  const hi = highlight ? ' hi' : '';
+  const rn = highlight ? `<div class="rn g">${num}</div>` : `<div class="rn">${num}</div>`;
+  return `<div class="row${hi}">${rn}<div class="rl">${label}</div><div class="rd">${detail||''}</div></div>`;
+}
+function simpleRow(label, detail) {
+  return `<div class="row"><div class="rl">${label}</div><div class="rd">${detail||''}</div></div>`;
+}
+function tagHtml(tag) {
+  const map = {
+    '예고':'t-imp','오늘':'t-new','안내':'t-reg','정기':'t-reg','화요일':'t-etc',
+    '특별':'t-sp','선교부':'t-mis','동산':'t-imp','청년1부':'t-sp','NEW':'t-new',
+    '중요':'t-imp','정기':'t-reg','교회력':'t-etc'
+  };
+  const cls = map[tag] || 't-etc';
+  return `<span class="ntag ${cls}">${tag}</span>`;
+}
+
+// ── PWA 설치 안내 ──
+function showInstallGuide() {
+  const ua = navigator.userAgent;
+  let msg = '브라우저 하단 또는 상단의 공유 아이콘(□↑)을 누른 후\n"홈 화면에 추가"를 선택하세요.';
+  if (/android/i.test(ua)) {
+    msg = 'Chrome 우측 상단 메뉴(⋮) →\n"홈 화면에 추가"를 선택하세요.';
+  }
+  alert('📱 홈 화면에 추가하는 방법\n\n' + msg);
+}
+
+// ── 주보 데이터 로드 ──
+async function loadJubo() {
+  try {
+    const res = await fetch('jubo.json?v=' + Date.now());
+    if (!res.ok) throw new Error('JSON 로드 실패');
+    const d = await res.json();
+    render(d);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } catch(e) {
+    document.getElementById('loading').innerHTML = 
+      '<div style="text-align:center;padding:20px;color:#888">주보를 불러올 수 없습니다.<br><small>'+e.message+'</small><br><br><button onclick="loadJubo()" style="padding:8px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer">다시 시도</button></div>';
+  }
+}
+
+function render(d) {
+  const m = d.meta;
+  const w = d.worship;
+
+  // ── 헤더 ──
+  document.getElementById('year-badge').textContent = m.year + '주년';
+  document.getElementById('jubo-no').textContent = `주일예배순서 ${m.volume} ${m.issue}`;
+  document.getElementById('jubo-date').textContent = `${m.date} (주일) · ${m.season}`;
+
+  // ── 예배부 그리드 ──
+  document.getElementById('worship-grid').innerHTML = `
+    <div class="w-card"><div class="w-card-t">1·2부</div><div class="w-card-v">7:30 / 9:00</div><div class="w-card-s">${w.part1_2.conductor}</div></div>
+    <div class="w-card main"><div class="w-card-t">3부 대예배</div><div class="w-card-v gold">오전 11:00</div><div class="w-card-s">${w.part3.conductor}</div></div>
+    <div class="w-card"><div class="w-card-t">4부 청년부</div><div class="w-card-v">오후 1:00</div><div class="w-card-s">${w.part4.conductor}</div></div>
+    <div class="w-card"><div class="w-card-t">오후 예배</div><div class="w-card-v">오후 4:00</div><div class="w-card-s">${w.afternoon.conductor}</div></div>
+  `;
+
+  // ── 설교 카드 ──
+  document.getElementById('sermon-badge').textContent = '이번 주 말씀 (1·2·3부)';
+  document.getElementById('sermon-title').textContent = w.part3.sermon_title.replace(/"/g,'');
+  document.getElementById('sermon-ref').textContent = w.part3.scripture;
+  document.getElementById('sermon-pastor').textContent = '담임 ' + w.part3.preacher;
+
+  // ── 1·2부 순서 ──
+  const p12 = w.part1_2;
+  document.getElementById('p12-label').textContent = p12.label + ' · 인도: ' + p12.conductor;
+  document.getElementById('p12-rows').innerHTML = [
+    row(1,'입례송',p12.intro_song),
+    row(2,'신앙고백',p12.creed),
+    row(3,'성시교독',p12.responsive_reading),
+    row(4,'찬송',p12.hymn),
+    row(5,'기도',p12.prayer),
+    row(6,'송영',p12.choir),
+    row(7,'봉헌송',p12.offering_song),
+    row(8,'봉헌기도',p12.offering_prayer),
+    row(9,'교회생활',p12.church_life),
+    row(10,'찬양대 찬송',p12.choir_anthem.join('<br>')),
+    row(11,'성경봉독',p12.scripture,true),
+    row(12,'말씀선포',p12.sermon_title+'<br>'+p12.preacher,true),
+    row(13,'결단 찬송',p12.closing_hymn),
+    row(14,'합심기도',p12.unison_prayer),
+    row(15,'축도',p12.benediction),
+  ].join('');
+
+  // ── 3부 순서 ──
+  const p3 = w.part3;
+  document.getElementById('p3-label').textContent = p3.label + ' · 인도: ' + p3.conductor;
+  document.getElementById('p3-rows').innerHTML = [
+    row(1,'입례송',p3.intro_song),
+    row(2,'신앙고백',p3.creed),
+    row(3,'찬양',p3.praise),
+    row(4,'기도',p3.prayer),
+    row(5,'송영','찬양대'),
+    row(6,'봉헌송',p3.offering_song),
+    row(7,'봉헌기도',p3.offering_prayer),
+    row(8,'교회생활',p3.church_life),
+    row(9,'찬양대 찬양','소망찬양대'),
+    row(10,'성경봉독',p3.scripture,true),
+    row(11,'말씀선포',p3.sermon_title+'<br>'+p3.preacher,true),
+    row(12,'결단 찬송',p3.closing_hymn),
+    row(13,'합심기도',p3.unison_prayer),
+    row(14,'축도',p3.benediction),
+  ].join('');
+
+  // ── 4부 순서 ──
+  const p4 = w.part4;
+  document.getElementById('p4-label').textContent = p4.label + ' · 인도: ' + p4.conductor;
+  document.getElementById('p4-rows').innerHTML = [
+    row(1,'중보적기도',p4.intercessory_prayer),
+    row(2,'찬양',p4.praise),
+    row(3,'기도',p4.prayer),
+    row(4,'봉헌',p4.offering),
+    row(5,'성경봉독',p4.scripture,true),
+    row(6,'말씀',p4.sermon_title+'<br>'+p4.preacher,true),
+    row(7,'축도',p4.benediction),
+  ].join('');
+
+  // ── 오후 예배 ──
+  const pm = w.afternoon;
+  document.getElementById('pm-label').textContent = pm.label + ' ' + (pm.subtitle||'') + ' · ' + pm.time + ' · 인도: ' + pm.conductor;
+  document.getElementById('pm-rows').innerHTML = pm.order.map((o,i) =>
+    row(i+1, o.name, o.detail)
+  ).join('');
+
+  // ── 삼일예배 ──
+  const ww = w.wednesday;
+  document.getElementById('wed-rows').innerHTML = [
+    simpleRow('일시', ww.date + ' ' + ww.times),
+    simpleRow('인도', ww.conductor),
+    simpleRow('찬송', ww.hymns),
+    simpleRow('기도', ww.prayer),
+    simpleRow('찬양대', ww.choir),
+    simpleRow('성경봉독', ww.scripture),
+    simpleRow('말씀', ww.sermon_title),
+  ].join('');
+
+  // ── 금요성령기도회 ──
+  const fr = w.friday;
+  document.getElementById('fri-rows').innerHTML = [
+    simpleRow('일시', fr.date + ' ' + fr.time),
+    simpleRow('인도', fr.conductor),
+    simpleRow('찬양', fr.praise),
+    simpleRow('성경봉독', fr.scripture),
+    simpleRow('말씀', fr.sermon_title),
+    simpleRow('기도', fr.prayer),
+  ].join('');
+
+  // ── S2: 교회생활 ──
+  let clHtml = '';
+  d.church_life.forEach(cat => {
+    clHtml += `<div class="cat-div">¶ ${cat.category}</div>`;
+    clHtml += '<div class="card">';
+    cat.items.forEach(item => {
+      clHtml += `<div class="ni">`;
+      if (item.tag) clHtml += tagHtml(item.tag);
+      clHtml += `<div class="n-title">${item.num ? item.num+'. ' : ''}${item.title}</div>`;
+      if (item.desc) clHtml += `<div class="n-desc">${item.desc}</div>`;
+      clHtml += `</div>`;
+    });
+    clHtml += '</div>';
+  });
+  document.getElementById('church-life-content').innerHTML = clHtml;
+
+  // ── S3: 책임담당 ──
+  const du = d.duty;
+  const dutyHtml = `
+    <table class="duty-table">
+      <tr>
+        <th></th><th>구분</th><th>기도</th><th>안내</th><th>봉헌</th>
+      </tr>
+      ${['part1','part2','part3','part4'].map((p,i)=>`
+        <tr>
+          ${i===0 ? '<td rowspan="4" style="font-weight:700;color:var(--navy);font-size:11px;">오늘</td>' : ''}
+          <td class="part-label">${i+1}부</td>
+          <td>${du.today[p].prayer}</td>
+          <td>${du.today[p].guide}</td>
+          <td>${du.today[p].offering}</td>
+        </tr>
+      `).join('')}
+      ${['part1','part2','part3','part4'].map((p,i)=>`
+        <tr>
+          ${i===0 ? '<td rowspan="4" style="font-weight:700;color:var(--tg);font-size:11px;">다음주</td>' : ''}
+          <td class="part-label" style="color:var(--tg)">${i+1}부</td>
+          <td style="color:var(--tg)">${du.next[p].prayer}</td>
+          <td style="color:var(--tg)">${du.next[p].guide}</td>
+          <td style="color:var(--tg)">${du.next[p].offering}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+  document.getElementById('duty-content').innerHTML = dutyHtml;
+
+  // 예배 안내
+  document.getElementById('worship-guide-title').textContent = du.worship_guide.title;
+  let wgHtml = '';
+  ['today','next'].forEach((period, pi) => {
+    du.worship_guide[period].forEach(item => {
+      wgHtml += `<div class="row"><div class="rl">${pi===0?'오늘':'다음주'} ${item.part}</div><div class="rd">${item.names}</div></div>`;
+    });
+  });
+  document.getElementById('worship-guide-content').innerHTML = wgHtml;
+
+  // 심방 담당
+  let icHtml = '';
+  du.intercession.today.forEach(item => {
+    icHtml += `<div class="row"><div class="rl" style="color:var(--tg);font-size:11px;">오늘 ${item.part}</div><div class="rd">${item.name}</div></div>`;
+  });
+  du.intercession.next.forEach(item => {
+    icHtml += `<div class="row"><div class="rl" style="color:var(--tg);font-size:11px;">다음주 ${item.part}</div><div class="rd">${item.name}</div></div>`;
+  });
+  document.getElementById('intercession-content').innerHTML = icHtml;
+
+  // 셔틀버스
+  const sh = d.shuttle;
+  document.getElementById('shuttle-content').innerHTML = `
+    <div class="shuttle-item"><span class="s-part">1부</span><div class="s-route">${sh.part1}</div></div>
+    <div class="shuttle-item"><span class="s-part">2부</span><div class="s-route">${sh.part2}</div></div>
+    <div class="shuttle-item"><span class="s-part">3부 ①</span><div class="s-route">${sh.part3_a}</div></div>
+    <div class="shuttle-item"><span class="s-part">3부 ②</span><div class="s-route">${sh.part3_b}</div></div>
+    <div class="shuttle-item" style="border:none"><div class="s-route" style="color:var(--tg);font-size:11px;">※귀가 차량 미운행 · 문의: ${sh.contact}</div></div>
+  `;
+
+  // ── S4: 성도의 교제 ──
+  const fe = d.fellowship;
+  let feHtml = '';
+  if (fe.bereaved && fe.bereaved.length) {
+    fe.bereaved.forEach(f => {
+      feHtml += `<div class="ni"><span class="f-tag f-brs">별세</span><div class="n-desc" style="margin-top:2px">${f.content}</div></div>`;
+    });
+  }
+  if (fe.congratulations && fe.congratulations.length) {
+    fe.congratulations.forEach(f => {
+      feHtml += `<div class="ni"><span class="f-tag f-cong">축하</span><div class="n-desc" style="margin-top:2px">${f.content}</div></div>`;
+    });
+  }
+  if (fe.bible_completion && fe.bible_completion.length) {
+    fe.bible_completion.forEach(f => {
+      feHtml += `<div class="ni"><span class="f-tag f-bible">성경쓰기</span><div class="n-desc" style="margin-top:2px">${f.content}</div></div>`;
+    });
+  }
+  if (!feHtml) feHtml = '<div class="ni" style="color:var(--tg);font-size:12px;">이번 주 교제 소식이 없습니다.</div>';
+  document.getElementById('fellowship-content').innerHTML = feHtml;
+
+  // 헌금 명단
+  const of = d.offering_list;
+  let ofHtml = `
+    <div class="o-row"><div class="o-label">십일조</div><div class="o-value" style="font-size:11px;line-height:1.7">${of['십일조']}</div></div>
+    <div class="o-row"><div class="o-label">범사의감사</div><div class="o-value" style="font-size:11px">${of['범사의감사_summary']}</div></div>
+    <div class="o-row o-total"><div class="o-label">안내</div><div class="o-value">${of.note}</div></div>
+  `;
+  document.getElementById('offering-content').innerHTML = ofHtml;
+
+  // ── S5: 성경보기 ──
+  const br = d.bible_reading;
+  document.getElementById('bible-grid').innerHTML = Object.entries(br).map(([day,txt])=>
+    `<div class="b-day"><div class="b-d">${day}</div><div class="b-v">${txt}</div></div>`
+  ).join('');
+
+  // 생활 예고
+  document.getElementById('schedule-content').innerHTML = d.schedule.map(s =>
+    `<div class="sch-item"><div class="sch-date">${s.date}</div><div class="sch-desc">${s.desc}</div></div>`
+  ).join('');
+}
+
+// 실행
+loadJubo();
+
+// PWA Service Worker 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

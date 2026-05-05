@@ -1,0 +1,218 @@
+아래는 노량진교회 주보 웹앱용 프롬프트입니다.
+첨부한 PDF 주보를 읽고 jubo.json 파일을 생성해 주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+첨부한 PDF는 노량진교회 주일예배순서 주보입니다.
+PDF의 모든 내용을 빠짐없이 읽어서 아래 JSON 형식에 맞게 변환해 주세요.
+
+규칙:
+1. 내용을 절대 요약하거나 생략하지 마세요. PDF에 있는 그대로 옮기세요.
+2. 큰따옴표(")가 값 안에 들어갈 때는 앞에 역슬래시를 붙여주세요: \"이렇게\"
+3. 줄바꿈이 필요한 곳은 \n을 사용하세요.
+4. JSON 형식을 정확히 지켜주세요. 중괄호, 대괄호, 쉼표 누락 없이.
+5. church_life의 tag는 아래 중 하나로 지정하세요:
+   - 오늘 / 예고 / 안내 / 정기 / 특별 / 선교부 / 동산 / 청년1부 / 청년2부 / 기타
+6. 헌금 명단(십일조, 범사의감사 등)은 이름을 공백으로 구분해서 하나의 문자열로 넣으세요.
+7. 셔틀버스 노선은 → 대신 →를 그대로 사용하세요.
+8. 오후예배 순서는 order 배열에 순서대로 넣으세요.
+9. 심방 담당 권사는 intercession에, 예배 안내는 worship_guide에 넣으세요.
+
+결과물은 ```json 블록으로 감싸서 출력해 주세요.
+JSON 앞뒤에 설명 텍스트를 추가하지 말고, 오직 JSON만 출력해 주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+출력할 JSON 형식 (이 구조를 반드시 따르세요):
+
+{
+  "meta": {
+    "volume": "120권",
+    "issue": "제 X호",
+    "date": "2026. X. XX",
+    "season": "교회력 절기명",
+    "seasonColor": "색상(의미)",
+    "year": 120
+  },
+
+  "worship": {
+    "part1_2": {
+      "label": "1부(07:30) 2부(09:00)",
+      "conductor": "인도자 이름",
+      "intro_song": "입례송 제목",
+      "creed": "신앙고백 내용",
+      "responsive_reading": "성시교독 번호 및 제목",
+      "hymn": "찬송 번호",
+      "prayer": "기도 담당자",
+      "choir": "찬양대명",
+      "offering_song": "봉헌송",
+      "offering_prayer": "봉헌기도 담당자",
+      "church_life": "교회생활 담당자",
+      "choir_anthem": ["1.찬양대명", "2.찬양대명"],
+      "scripture": "성경봉독 본문\n(신약/구약 XXX면)",
+      "sermon_title": "\"설교제목\"",
+      "preacher": "설교자",
+      "closing_hymn": "결단찬송 번호",
+      "unison_prayer": "합심기도",
+      "benediction": "축도 담당자"
+    },
+    "part3": {
+      "label": "3부(11:00)",
+      "conductor": "인도자",
+      "intro_song": "입례송",
+      "creed": "신앙고백",
+      "praise": "찬양팀명 / 다같이",
+      "prayer": "기도 담당자",
+      "choir_anthem": "찬양대명",
+      "offering_song": "봉헌송",
+      "offering_prayer": "봉헌기도",
+      "church_life": "교회생활",
+      "scripture": "성경봉독 본문\n(면수)",
+      "sermon_title": "\"설교제목\"",
+      "preacher": "설교자",
+      "closing_hymn": "결단찬송",
+      "unison_prayer": "합심기도",
+      "benediction": "축도"
+    },
+    "part4": {
+      "label": "4부(청년부) 13:00",
+      "conductor": "인도자",
+      "intercessory_prayer": "중보기도",
+      "praise": "찬양팀",
+      "prayer": "기도 담당자",
+      "offering": "봉헌",
+      "scripture": "성경봉독 본문\n(면수)",
+      "sermon_title": "\"설교제목\"",
+      "preacher": "설교자",
+      "benediction": "축도"
+    },
+    "afternoon": {
+      "label": "주일 오후 예배",
+      "subtitle": "부제목(있으면)",
+      "time": "오후 4:00",
+      "conductor": "인도자",
+      "order": [
+        { "name": "순서명", "detail": "내용" }
+      ]
+    },
+    "wednesday": {
+      "date": "X월 XX일",
+      "times": "Ⅰ.오전 11:00  Ⅱ.오후 7:30",
+      "conductor": "인도자",
+      "hymns": "찬송 번호들",
+      "prayer": "기도 담당자",
+      "choir": "찬양대",
+      "scripture": "성경봉독 본문(면수)",
+      "sermon_title": "\"설교제목\" / 설교자"
+    },
+    "friday": {
+      "date": "X월 XX일",
+      "time": "오후 8:30~10:30",
+      "conductor": "인도자",
+      "praise": "찬양팀",
+      "scripture": "성경봉독 본문(면수)",
+      "sermon_title": "\"설교제목\" / 설교자",
+      "prayer": "기도 방식"
+    }
+  },
+
+  "duty": {
+    "today": {
+      "part1": { "prayer": "기도 담당 장로", "guide": "안내 담당", "offering": "봉헌 담당" },
+      "part2": { "prayer": "", "guide": "", "offering": "" },
+      "part3": { "prayer": "", "guide": "", "offering": "" },
+      "part4": { "prayer": "", "guide": "", "offering": "" }
+    },
+    "next": {
+      "part1": { "prayer": "", "guide": "", "offering": "" },
+      "part2": { "prayer": "", "guide": "", "offering": "" },
+      "part3": { "prayer": "", "guide": "", "offering": "" },
+      "part4": { "prayer": "", "guide": "", "offering": "" }
+    },
+    "worship_guide": {
+      "title": "예배를 위한 안내(X월)",
+      "today": [
+        { "part": "1부", "names": "이름1 이름2" },
+        { "part": "2부", "names": "이름1 이름2 이름3" }
+      ],
+      "next": [
+        { "part": "3부", "names": "이름1 이름2 이름3" }
+      ]
+    },
+    "intercession": {
+      "title": "심방 담당",
+      "today": [
+        { "part": "1부", "name": "이름 권사" },
+        { "part": "2부", "name": "이름 권사" },
+        { "part": "3부", "name": "이름 권사" },
+        { "part": "4부", "name": "이름 권사" }
+      ],
+      "next": [
+        { "part": "1부", "name": "이름 권사" },
+        { "part": "2부", "name": "이름 권사" },
+        { "part": "3부", "name": "이름 권사" },
+        { "part": "4부", "name": "이름 권사" }
+      ]
+    }
+  },
+
+  "church_life": [
+    {
+      "category": "카테고리명(예배/성례/기도/심방/회의/전도/알림 등)",
+      "items": [
+        {
+          "num": 1,
+          "tag": "태그",
+          "title": "항목 제목",
+          "desc": "상세 내용 (없으면 이 줄 제거)"
+        }
+      ]
+    }
+  ],
+
+  "fellowship": {
+    "bereaved": [
+      { "tag": "별세", "content": "내용" }
+    ],
+    "congratulations": [
+      { "tag": "축하", "content": "내용" }
+    ],
+    "bible_completion": [
+      { "tag": "성경쓰기", "content": "내용" }
+    ]
+  },
+
+  "bible_reading": {
+    "월": "본문",
+    "화": "본문",
+    "수": "본문",
+    "목": "본문",
+    "금": "본문",
+    "토": "본문"
+  },
+
+  "schedule": [
+    { "date": "X월 XX일(요일)", "desc": "내용" }
+  ],
+
+  "shuttle": {
+    "part1": "정류장(시간)→정류장(시간)→교회(시간)",
+    "part2": "정류장(시간)→교회(시간)",
+    "part3_a": "정류장(시간)→교회(시간)",
+    "part3_b": "정류장(시간)→교회(시간)",
+    "contact": "담당자 이름 연락처"
+  },
+
+  "offering_list": {
+    "십일조": "이름1 이름2 이름3 ...",
+    "범사의감사": "이름1 이름2 이름3 ...",
+    "영적은혜": "이름1(X회) 이름2 ...",
+    "육신의평강": "이름1 이름2",
+    "사업및형통": "이름1 이름2",
+    "생일감사": "이름1 이름2",
+    "이웃사랑헌금": "이름1 이름2",
+    "선교회비": "이름1 이름2 ...",
+    "기타헌금": "내용",
+    "note": "상세 헌금 내역은 홈페이지 주보를 참고하시고 전실에도 비치되어 있습니다."
+  }
+}

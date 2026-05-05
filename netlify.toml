@@ -1,0 +1,23 @@
+# 노량진교회 주보 Netlify 배포 설정
+
+[build]
+  publish = "."
+
+# jubo.json은 항상 최신 버전을 가져오도록 캐시 비활성화
+[[headers]]
+  for = "/jubo.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+# HTML도 캐시하지 않음 (즉시 반영)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# 모든 경로를 index.html로 라우팅 (SPA 지원)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
