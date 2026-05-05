@@ -242,6 +242,78 @@ body {
 
 /* ── CATEGORY DIVIDER ── */
 .cat-div { font-size:11px; font-weight:700; color:var(--navy); padding:10px 14px 4px; letter-spacing:0.5px; }
+
+/* ── 지난 주보 모달 ── */
+.archive-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  z-index: 200; display: none; align-items: flex-end; justify-content: center;
+}
+.archive-overlay.show { display: flex; animation: fadeIn2 .2s ease; }
+@keyframes fadeIn2 { from{opacity:0} to{opacity:1} }
+.archive-sheet {
+  background: var(--ww); width: 100%; max-width: 480px;
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh; overflow-y: auto;
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.archive-header {
+  padding: 16px 18px 12px;
+  border-bottom: 0.5px solid var(--bdr);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--ww); z-index: 10;
+}
+.archive-header h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
+.archive-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bdr); border: none; cursor: pointer;
+  font-size: 16px; color: var(--tg); display: flex; align-items: center; justify-content: center;
+}
+.archive-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px; border-bottom: 0.5px solid var(--bdr);
+  cursor: pointer; transition: background .15s;
+}
+.archive-item:hover { background: var(--cream); }
+.archive-item:last-child { border-bottom: none; }
+.archive-item-left { flex: 1; }
+.archive-date { font-size: 13px; font-weight: 700; color: var(--navy); }
+.archive-sermon { font-size: 11.5px; color: var(--tg); margin-top: 3px; }
+.archive-arrow { font-size: 16px; color: var(--tg); }
+.archive-badge {
+  font-size: 9px; font-weight: 700; background: var(--gold);
+  color: var(--navy); padding: 2px 7px; border-radius: 10px; margin-left: 6px;
+}
+.archive-empty {
+  padding: 40px 20px; text-align: center;
+  font-size: 13px; color: var(--tg); line-height: 2;
+}
+
+/* ── 지난주보 보기 버튼 (헤더 내) ── */
+.archive-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.15); border: none;
+  border-radius: 7px; padding: 5px 10px;
+  font-size: 11px; color: rgba(255,255,255,0.85);
+  cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 500; white-space: nowrap;
+}
+.archive-btn:active { background: rgba(255,255,255,0.25); }
+
+/* ── 이전주보 보는 중 배너 ── */
+.viewing-banner {
+  display: none; background: var(--gold);
+  padding: 8px 14px; text-align: center;
+  font-size: 12px; font-weight: 700; color: var(--navy);
+  position: sticky; top: 45px; z-index: 49;
+}
+.viewing-banner.show { display: block; }
+.viewing-banner button {
+  margin-left: 10px; background: var(--navy); color: #fff;
+  border: none; border-radius: 5px; padding: 3px 10px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
 </style>
 </head>
 <body>
@@ -260,11 +332,31 @@ body {
         <div class="church-name">노량진교회</div>
         <div class="church-sub">대한예수교장로회(통합) · since 1906</div>
       </div>
-      <div class="year-badge" id="year-badge"></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="year-badge" id="year-badge"></div>
+        <button class="archive-btn" onclick="openArchive()">&#128218; 지난 주보</button>
+      </div>
     </div>
     <div class="hd-divider"></div>
     <div class="jubo-no" id="jubo-no"></div>
     <div class="jubo-date" id="jubo-date"></div>
+  </div>
+
+  <!-- 이전 주보 보는 중 배너 -->
+  <div class="viewing-banner" id="viewing-banner">
+    지난 주보를 보는 중입니다
+    <button onclick="loadCurrentJubo()">최신 주보로 돌아가기</button>
+  </div>
+
+  <!-- 지난 주보 모달 -->
+  <div class="archive-overlay" id="archive-overlay" onclick="closeArchiveIfBg(event)">
+    <div class="archive-sheet">
+      <div class="archive-header">
+        <h3>&#128218; 지난 주보 목록</h3>
+        <button class="archive-close" onclick="closeArchive()">X</button>
+      </div>
+      <div id="archive-list"></div>
+    </div>
   </div>
 
   <!-- TABS -->
@@ -465,7 +557,7 @@ async function loadJubo() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'block';
   } catch(e) {
-    document.getElementById('loading').innerHTML = 
+    document.getElementById('loading').innerHTML =
       '<div style="text-align:center;padding:20px;color:#888">주보를 불러올 수 없습니다.<br><small>'+e.message+'</small><br><br><button onclick="loadJubo()" style="padding:8px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer">다시 시도</button></div>';
   }
 }
@@ -675,11 +767,23 @@ function render(d) {
 
   // 헌금 명단
   const of = d.offering_list;
-  let ofHtml = `
-    <div class="o-row"><div class="o-label">십일조</div><div class="o-value" style="font-size:11px;line-height:1.7">${of['십일조']}</div></div>
-    <div class="o-row"><div class="o-label">범사의감사</div><div class="o-value" style="font-size:11px">${of['범사의감사_summary']}</div></div>
-    <div class="o-row o-total"><div class="o-label">안내</div><div class="o-value">${of.note}</div></div>
-  `;
+  let ofHtml = '';
+  const ofKeys = ['십일조','범사의감사','범사의감사_summary','영적은혜','육신의평강','사업및형통','생일감사','장학헌금','이웃사랑헌금','선교회비','기타헌금'];
+  ofKeys.forEach(k => {
+    if (of[k] && k !== '범사의감사_summary') {
+      const label = k === '기타헌금' ? '기타' : k;
+      ofHtml += `<div class="o-row"><div class="o-label">${label}</div><div class="o-value" style="font-size:11px;line-height:1.7">${of[k]}</div></div>`;
+    }
+  });
+  // 범사의감사 별도 처리
+  if (of['범사의감사']) {
+    ofHtml = `<div class="o-row"><div class="o-label">십일조</div><div class="o-value" style="font-size:11px;line-height:1.7">${of['십일조']||''}</div></div>`
+           + `<div class="o-row"><div class="o-label">범사의감사</div><div class="o-value" style="font-size:11px;line-height:1.7">${of['범사의감사']}</div></div>`;
+    ['영적은혜','육신의평강','사업및형통','생일감사','장학헌금','이웃사랑헌금','선교회비','기타헌금'].forEach(k => {
+      if (of[k]) ofHtml += `<div class="o-row"><div class="o-label">${k}</div><div class="o-value" style="font-size:11px;line-height:1.7">${of[k]}</div></div>`;
+    });
+  }
+  ofHtml += `<div class="o-row o-total"><div class="o-label">안내</div><div class="o-value">${of.note||''}</div></div>`;
   document.getElementById('offering-content').innerHTML = ofHtml;
 
   // ── S5: 성경보기 ──
@@ -692,6 +796,88 @@ function render(d) {
   document.getElementById('schedule-content').innerHTML = d.schedule.map(s =>
     `<div class="sch-item"><div class="sch-date">${s.date}</div><div class="sch-desc">${s.desc}</div></div>`
   ).join('');
+}
+
+// ── 현재/지난 주보 구분 ──
+let isViewingArchive = false;
+
+// ── 현재 주보 로드 ──
+async function loadCurrentJubo() {
+  isViewingArchive = false;
+  document.getElementById('viewing-banner').classList.remove('show');
+  try {
+    const res = await fetch('jubo.json?v=' + Date.now());
+    if (!res.ok) throw new Error('로드 실패');
+    const d = await res.json();
+    render(d);
+    // 탭을 예배순서로 초기화
+    document.querySelectorAll('.tab-btn')[0].click();
+    window.scrollTo(0,0);
+  } catch(e) {
+    alert('주보를 불러올 수 없습니다.');
+  }
+}
+
+// ── 지난 주보 모달 열기 ──
+async function openArchive() {
+  document.getElementById('archive-overlay').classList.add('show');
+  await loadArchiveList();
+}
+
+function closeArchive() {
+  document.getElementById('archive-overlay').classList.remove('show');
+}
+
+function closeArchiveIfBg(e) {
+  if (e.target === document.getElementById('archive-overlay')) closeArchive();
+}
+
+// ── archive/index.json 에서 목록 로드 ──
+async function loadArchiveList() {
+  const listEl = document.getElementById('archive-list');
+  listEl.innerHTML = '<div class="archive-empty">불러오는 중...</div>';
+  try {
+    const res = await fetch('archive/index.json?v=' + Date.now());
+    if (!res.ok) throw new Error('목록 없음');
+    const list = await res.json(); // [{date, issue, sermon, file}]
+    if (!list.length) throw new Error('비어있음');
+
+    listEl.innerHTML = list.map((item, i) => `
+      <div class="archive-item" onclick="loadArchiveJubo('${item.file}')">
+        <div class="archive-item-left">
+          <div class="archive-date">
+            ${item.date}
+            ${i===0 ? '<span class="archive-badge">최근</span>' : ''}
+          </div>
+          <div class="archive-sermon">${item.issue} &nbsp;·&nbsp; ${item.sermon}</div>
+        </div>
+        <div class="archive-arrow">&#8250;</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    listEl.innerHTML = `
+      <div class="archive-empty">
+        아직 보관된 지난 주보가 없습니다.<br>
+        <span style="font-size:11px;color:#aaa">매주 주보 교체 시 이전 파일을<br>archive/ 폴더에 저장하면 여기에 표시됩니다.</span>
+      </div>`;
+  }
+}
+
+// ── 지난 주보 JSON 로드 및 렌더 ──
+async function loadArchiveJubo(filename) {
+  closeArchive();
+  try {
+    const res = await fetch('archive/' + filename + '?v=' + Date.now());
+    if (!res.ok) throw new Error('파일 없음');
+    const d = await res.json();
+    render(d);
+    isViewingArchive = true;
+    document.getElementById('viewing-banner').classList.add('show');
+    document.querySelectorAll('.tab-btn')[0].click();
+    window.scrollTo(0,0);
+  } catch(e) {
+    alert('해당 주보를 불러올 수 없습니다.');
+  }
 }
 
 // 실행
