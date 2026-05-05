@@ -1,6 +1,6 @@
 // 노량진교회 주보 Service Worker
 // 캐시 이름에 버전을 넣어두면 업데이트 시 자동 갱신됩니다
-const CACHE_NAME = 'nrj-jubo-v2';
+const CACHE_NAME = 'nrj-jubo-v1';
 
 // 오프라인에서도 볼 수 있도록 캐시할 파일 목록
 const STATIC_FILES = [
